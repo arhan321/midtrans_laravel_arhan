@@ -1,0 +1,43 @@
+version : '3'
+services:
+  php_midtrans:
+    build: ./php
+    image: php:latest
+    container_name: php_midtrans
+    hostname: "php"
+    volumes:
+      - ./midtrans_sandbox:/var/www/html
+      - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+    working_dir: /var/www/html
+    depends_on:
+      - mysql_midtrans
+
+  mysql_midtrans:
+    image: mariadb:10.2
+    container_name: mysql_midtrans
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "23906:3306"
+    volumes:
+      - ./database/data:/var/lib/mysql
+      - ./conf.d:/etc/mysql/conf.d:ro
+    environment:
+      MYSQL_USER: Djoni!!
+      MYSQL_PASSWORD: Djony
+      MYSQL_ROOT_PASSWORD: Djony
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+
+  nginx_midtrans:
+    build: ./nginx
+    image: nginx:latest
+    container_name: nginx_midtrans
+    hostname: "nginx"
+    ports:
+      - "85:80"
+    volumes:
+      - ./midtrans_sandbox:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php_midtrans
